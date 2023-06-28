@@ -4,9 +4,56 @@ output: html_document
 ---
 
 ```{r}
+# added to avoid import conflicts - https://stackoverflow.com/a/75058976
+library(conflicted)
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+
+library(tidyverse)
 library(Ecdat)
+
 UnempDur
 ```
+
 ```{r}
 summary(UnempDur)
+```
+
+```{r}
+# Age Encoding to 10 years diff 
+UnempDur_df <- UnempDur |>
+  mutate(ageCat = cut(age, 
+                      breaks = c(20, 30, 40, 50, Inf), 
+                      labels = c("20-30", "31-40", "41-50", ">=51"), 
+                      include.lowest = TRUE, 
+                      right = FALSE))
+UnempDur_df
+```
+
+```{r}
+# Create job_rank variable
+UnempDur_df$job_rank <- cut(UnempDur_df$tenure, 
+                                 breaks = c(0, 2, 5, 10, Inf), 
+                                 labels = c("Entry", "Mid", "Senior", "Executive"),
+                                 include.lowest = TRUE, 
+                                 right = FALSE)
+                  
+# Check the new variable
+head(UnempDur_df$job_rank)
+```
+
+```{r}
+# age >= 51 flag
+UnempDur_df$age_51 <- cut(UnempDur_df$age, 
+                                 breaks = c(0,51,Inf), 
+                                 labels = c("<51", ">=51"),
+                                 include.lowest = TRUE, 
+                                 right = FALSE)
+UnempDur_df
+```
+
+```{r}
+# censor and time variables
+ttr = UnempDur_df$spell
+event = UnempDur_df$censor1
 ```
